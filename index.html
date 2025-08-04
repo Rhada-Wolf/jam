@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rogue's Gallery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="mainScreen" class="screen active">
+        <h1>Rogue's Gallery</h1>
+        <p>Become the ultimate police sketch artist!</p>
+        <button id="startGameBtn">Start Game</button>
+    </div>
+
+    <div id="gameScreen" class="screen">
+        <h1>Rogue's Gallery: Police Sketch Artist</h1>
+
+        <div class="controls">
+            <label for="colorPicker">Brush Color:</label>
+            <input type="color" id="colorPicker" value="#000000">
+            <label for="brushSize">Brush Size:</label>
+            <input type="range" id="brushSize" min="1" max="20" value="5">
+            <button id="eraserBtn">Eraser</button>
+        </div>
+
+        <div class="criminal-profile">
+            <h2>Criminal Profile</h2>
+            <p id="criminalDescription"></p>
+            <div class="timer">Time Left: <span id="timeLeft">3:00</span></div>
+        </div>
+
+        <canvas id="drawingCanvas" width="800" height="600"></canvas>
+
+        <button id="submitBtn">Submit Sketch</button>
+
+        <div class="score-display">
+            <h2>Score: <span id="score">0</span>%</h2>
+        </div>
+
+        <button id="nextCriminalBtn">Next Criminal</button>
+
+        <div class="feedback-display">
+            <h3>Features Detected:</h3>
+            <ul id="detectedFeaturesList"></ul>
+            <h3>Target Features:</h3>
+            <ul id="targetFeaturesList"></ul>
+        </div>
+
+        <div class="sticker-gallery">
+            <h3>Stickers:</h3>
+            <img src="images/sticker1.png" alt="Sticker 1" class="sticker" data-sticker-src="images/sticker1.png">
+            <img src="images/sticker2.png" alt="Sticker 2" class="sticker" data-sticker-src="images/sticker2.png">
+        </div>
+    </div>
+
+    <script async src="https://docs.opencv.org/4.x/opencv.js" type="text/javascript"></script>
+    <script src="script.js"></script>
+</body>
+</html>
