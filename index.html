@@ -17,10 +17,16 @@
         <h1>Rogue's Gallery: Police Sketch Artist</h1>
 
         <div class="controls">
-            <label for="colorPicker">Brush Color:</label>
-            <input type="color" id="colorPicker" value="#000000">
-            <label for="brushSize">Brush Size:</label>
-            <input type="range" id="brushSize" min="1" max="20" value="5">
+            <label>Brush Color:</label>
+            <div id="colorPalette" class="color-palette">
+                <!-- Color swatches will be inserted here by JavaScript -->
+            </div>
+            <label>Brush Size:</label>
+            <div class="brush-size-palette">
+                <div class="brush-size-swatch" id="brushThin" data-size="3"></div>
+                <div class="brush-size-swatch" id="brushMedium" data-size="8"></div>
+                <div class="brush-size-swatch" id="brushHeavy" data-size="15"></div>
+            </div>
             <button id="eraserBtn">Eraser</button>
         </div>
 
@@ -54,7 +60,15 @@
         </div>
     </div>
 
+    <!-- Game Popup -->
+    <div id="gamePopup" class="game-popup">
+        <div class="popup-content">
+            <p id="popupMessage"></p>
+            <button id="popupCloseBtn">OK</button>
+        </div>
+    </div>
+
     <script async src="https://docs.opencv.org/4.x/opencv.js" type="text/javascript"></script>
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
