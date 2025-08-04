@@ -57,6 +57,24 @@ h1 {
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
+.game-mode-btn {
+    padding: 15px 30px;
+    font-size: 1.5em;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    margin: 10px; /* Add some margin between buttons */
+}
+
+.game-mode-btn:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+}
+
 #startGameBtn:hover {
     background-color: #218838;
     transform: translateY(-2px);

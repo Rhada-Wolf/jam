@@ -5,10 +5,12 @@ export class Game {
         this.currentCriminalIndex = 0;
         this.timeLeft = 30;
         this.timerInterval = null;
+        this.gameMode = 'drawing'; // 'drawing' or 'sticker'
 
         this.mainScreen = document.getElementById('mainScreen');
         this.gameScreen = document.getElementById('gameScreen');
         this.startGameBtn = document.getElementById('startGameBtn');
+        this.startStickerGameBtn = document.getElementById('startStickerGameBtn'); // New button
         this.canvas = document.getElementById('drawingCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.colorPalette = document.getElementById('colorPalette');
@@ -22,22 +24,33 @@ export class Game {
         this.detectedFeaturesListElem = document.getElementById('detectedFeaturesList');
         this.targetFeaturesListElem = document.getElementById('targetFeaturesList');
         this.stickerGallery = document.querySelector('.sticker-gallery');
+        this.debugToggleBtn = document.getElementById('debugToggleBtn');
         this.gamePopup = document.getElementById('gamePopup');
         this.popupMessageElem = document.getElementById('popupMessage');
         this.popupCloseBtn = document.getElementById('popupCloseBtn');
+        this.drawingTools = document.querySelector('.controls'); // Group drawing tools
 
         this.isDrawing = false;
         this.isErasing = false;
         this.selectedSticker = null;
 
         this.initEventListeners();
+        this.shuffleCriminals();
         this.loadCriminalProfile();
         this.startTimer();
         this.initCanvasSettings();
     }
 
+    shuffleCriminals() {
+        for (let i = this.criminalData.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this.criminalData[i], this.criminalData[j]] = [this.criminalData[j], this.criminalData[i]];
+        }
+    }
+
     initEventListeners() {
-        this.startGameBtn.addEventListener('click', () => this.startGame());
+        this.startGameBtn.addEventListener('click', () => this.startGame('drawing'));
+        this.startStickerGameBtn.addEventListener('click', () => this.startGame('sticker')); // New event listener
         this.stickerGallery.addEventListener('click', (e) => this.handleStickerSelection(e));
         this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
         this.nextCriminalBtn.addEventListener('click', () => this.nextCriminal());
@@ -46,6 +59,7 @@ export class Game {
         this.eraserBtn.addEventListener('click', () => this.activateEraser());
         this.submitBtn.addEventListener('click', () => this.submitSketch());
         this.popupCloseBtn.addEventListener('click', () => this.hidePopup());
+        this.debugToggleBtn.addEventListener('click', () => this.toggleDebugFeatures());
 
         this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
         this.canvas.addEventListener('mousemove', (e) => this.draw(e));
@@ -53,9 +67,28 @@ export class Game {
         this.canvas.addEventListener('mouseout', () => this.stopDrawing());
     }
 
-    startGame() {
+    startGame(mode) {
+        this.gameMode = mode;
         this.mainScreen.classList.remove('active');
         this.gameScreen.classList.add('active');
+
+        if (this.gameMode === 'drawing') {
+            this.drawingTools.style.display = 'block';
+            this.stickerGallery.style.display = 'none';
+            this.canvas.removeEventListener('click', (e) => this.handleCanvasClick(e)); // Remove sticker click listener
+            this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
+            this.canvas.addEventListener('mousemove', (e) => this.draw(e));
+            this.canvas.addEventListener('mouseup', () => this.stopDrawing());
+            this.canvas.addEventListener('mouseout', () => this.stopDrawing());
+        } else if (this.gameMode === 'sticker') {
+            this.drawingTools.style.display = 'none';
+            this.stickerGallery.style.display = 'block';
+            this.canvas.removeEventListener('mousedown', (e) => this.startDrawing(e)); // Remove drawing listeners
+            this.canvas.removeEventListener('mousemove', (e) => this.draw(e));
+            this.canvas.removeEventListener('mouseup', () => this.stopDrawing());
+            this.canvas.removeEventListener('mouseout', () => this.stopDrawing());
+            this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e)); // Add sticker click listener
+        }
     }
 
     handleStickerSelection(e) {
@@ -83,7 +116,11 @@ export class Game {
     }
 
     nextCriminal() {
-        this.currentCriminalIndex = (this.currentCriminalIndex + 1) % this.criminalData.length;
+        this.currentCriminalIndex++;
+        if (this.currentCriminalIndex >= this.criminalData.length) {
+            this.shuffleCriminals(); // Reshuffle if all criminals have been shown
+            this.currentCriminalIndex = 0;
+        }
         this.loadCriminalProfile();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.timeLeft = 30;
@@ -218,8 +255,8 @@ export class Game {
         clearInterval(this.timerInterval);
         this.isDrawing = false;
 
-        const detectedFeatures = this.detectFeatures(this.canvas);
         const currentCriminal = this.criminalData[this.currentCriminalIndex];
+        const detectedFeatures = this.detectFeatures(this.canvas, currentCriminal.targetFeatures);
         const matchingFeaturesCount = this.compareFeatures(detectedFeatures, currentCriminal.targetFeatures);
         const totalTargetFeatures = Object.keys(currentCriminal.targetFeatures).length;
         const score = this.calculateScore(matchingFeaturesCount, totalTargetFeatures);
@@ -227,7 +264,33 @@ export class Game {
         this.scoreElem.textContent = score;
         this.showPopup(`Sketch submitted! Your score: ${score}%`);
 
-        // Removed detailed feedback display as per user request
+        // Re-add detailed feedback display for debug purposes, hidden by default
+        this.detectedFeaturesListElem.innerHTML = '';
+        this.targetFeaturesListElem.innerHTML = '';
+
+        for (const feature in currentCriminal.targetFeatures) {
+            const targetLi = document.createElement('li');
+            targetLi.textContent = `${feature}: ${currentCriminal.targetFeatures[feature]}`;
+            this.targetFeaturesListElem.appendChild(targetLi);
+
+            const detectedLi = document.createElement('li');
+            detectedLi.textContent = `${feature}: ${detectedFeatures[feature]}`;
+            if (detectedFeatures[feature] === currentCriminal.targetFeatures[feature]) {
+                detectedLi.classList.add('match');
+            } else {
+                detectedLi.classList.add('miss');
+            }
+            this.detectedFeaturesListElem.appendChild(detectedLi);
+        }
+    }
+
+    toggleDebugFeatures() {
+        const feedbackDisplay = document.querySelector('.feedback-display');
+        if (feedbackDisplay.style.display === 'none' || feedbackDisplay.style.display === '') {
+            feedbackDisplay.style.display = 'block'; // Or 'flex' depending on original display
+        } else {
+            feedbackDisplay.style.display = 'none';
+        }
     }
 
     compareFeatures(detectedFeatures, targetFeatures) {
@@ -293,35 +356,13 @@ export class Game {
         return dominantColor;
     }
 
-    detectFeatures(canvas) {
+    detectFeatures(canvas, targetFeatures) {
         let src = cv.imread(canvas);
         let gray = new cv.Mat();
         cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
         cv.threshold(gray, gray, 120, 255, cv.THRESH_BINARY_INV); // Binary image for shape detection
 
-        let detectedFeatures = {
-            has_glasses: false,
-            glasses_color: "unknown",
-            has_mustache: false,
-            mustache_color: "unknown",
-            has_beard: false,
-            beard_color: "unknown",
-            hair_type: "none", // "short", "long", "bald", "medium"
-            hair_color: "unknown",
-            has_hat: false,
-            hat_color: "unknown",
-            eye_color: "unknown",
-            complexion: "unknown", // "fair", "olive", "dark"
-            nose_shape: "unknown", // "prominent", "small", "wide", "narrow", "hooked", "button"
-            lip_fullness: "unknown", // "thin", "medium", "full"
-            lip_color: "unknown",
-            face_shape: "unknown", // "round", "oval", "square", "heart", "diamond", "long"
-            ear_size: "unknown", // "small", "medium", "large"
-            eyebrow_shape: "unknown", // "thick", "thin", "arched", "straight", "bushy", "faded"
-            eyebrow_color: "unknown",
-            hair_texture: "unknown", // "straight", "wavy", "curly", "kinky", "braided", "dreadlocks"
-            facial_hair_style: "clean_shaven" // "stubble", "goatee", "full_beard", "clean_shaven", "van_dyke", "soul_patch", "sideburns"
-        };
+        let detectedFeatures = {};
 
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
@@ -353,149 +394,167 @@ export class Game {
         let eyebrowRegionRight = new cv.Rect(canvas.width * 0.6, canvas.height * 0.25, canvas.width * 0.1, canvas.height * 0.03);
         let complexionRegion = new cv.Rect(canvas.width * 0.4, canvas.height * 0.4, canvas.width * 0.2, canvas.height * 0.1); // Central face for complexion
 
-        // Glasses Detection
-        let glassesCount = 0;
-        for (let i = 0; i < contours.size(); ++i) {
-            let cnt = contours.get(i);
-            let rect = cv.boundingRect(cnt);
+        if (targetFeatures.hasOwnProperty('has_glasses')) {
+            let glassesCount = 0;
+            for (let i = 0; i < contours.size(); ++i) {
+                let cnt = contours.get(i);
+                let rect = cv.boundingRect(cnt);
 
-            const intersectsEyeRegion1 = !(rect.x + rect.width < eyeRegion1.x || eyeRegion1.x + eyeRegion1.width < rect.x || rect.y + rect.height < eyeRegion1.y || eyeRegion1.y + eyeRegion1.height < rect.y);
-            const intersectsEyeRegion2 = !(rect.x + rect.width < eyeRegion2.x || eyeRegion2.x + eyeRegion2.width < rect.x || rect.y + rect.height < eyeRegion2.y || eyeRegion2.y + eyeRegion2.height < rect.y);
+                const intersectsEyeRegion1 = !(rect.x + rect.width < eyeRegion1.x || eyeRegion1.x + eyeRegion1.width < rect.x || rect.y + rect.height < eyeRegion1.y || eyeRegion1.y + eyeRegion1.height < rect.y);
+                const intersectsEyeRegion2 = !(rect.x + rect.width < eyeRegion2.x || eyeRegion2.x + eyeRegion2.width < rect.x || rect.y + rect.height < eyeRegion2.y || eyeRegion2.y + eyeRegion2.height < rect.y);
 
-            if ((intersectsEyeRegion1 || intersectsEyeRegion2) && rect.width > 10 && rect.height > 5) {
-                glassesCount++;
+                if ((intersectsEyeRegion1 || intersectsEyeRegion2) && rect.width > 10 && rect.height > 5) {
+                    glassesCount++;
+                }
             }
-        }
-        if (glassesCount >= 2 && density > glassesThreshold) {
-            detectedFeatures.has_glasses = true;
-            detectedFeatures.glasses_color = this.getColorInRegion(src, eyeRegion1); // Get color from one eye region
-        }
-
-        // Mustache Detection
-        let mustacheRoi = gray.roi(mustacheRegion);
-        let nonZeroMustache = cv.countNonZero(mustacheRoi);
-        if (nonZeroMustache / totalPixels > mustacheThreshold) {
-            detectedFeatures.has_mustache = true;
-            detectedFeatures.mustache_color = this.getColorInRegion(src, mustacheRegion);
-        }
-        mustacheRoi.delete();
-
-        // Beard Detection
-        let beardRoi = gray.roi(beardRegion);
-        let nonZeroBeard = cv.countNonZero(beardRoi);
-        if (nonZeroBeard / totalPixels > beardThreshold) {
-            detectedFeatures.has_beard = true;
-            detectedFeatures.beard_color = this.getColorInRegion(src, beardRegion);
-        }
-        beardRoi.delete();
-
-        // Hair Type and Color Detection
-        let hairRoi = gray.roi(hairRegion);
-        let nonZeroHair = cv.countNonZero(hairRoi);
-        if (nonZeroHair / totalPixels > hairThreshold) {
-            detectedFeatures.hair_color = this.getColorInRegion(src, hairRegion);
-            // Basic hair type logic (can be refined)
-            if (nonZeroHair / totalPixels > 0.005) { // Higher density for "long"
-                detectedFeatures.hair_type = "long";
-            } else if (nonZeroHair / totalPixels > 0.002) { // Medium density for "medium"
-                detectedFeatures.hair_type = "medium";
+            if (glassesCount >= 2 && density > glassesThreshold) {
+                detectedFeatures.has_glasses = true;
+                detectedFeatures.glasses_color = this.getColorInRegion(src, eyeRegion1);
             } else {
-                detectedFeatures.hair_type = "short";
+                detectedFeatures.has_glasses = false;
+                detectedFeatures.glasses_color = "unknown";
             }
-        } else {
-            detectedFeatures.hair_type = "bald";
-            detectedFeatures.hair_color = "none"; // No hair color if bald
         }
-        hairRoi.delete();
 
-        // Hat Detection
-        let hatRoi = gray.roi(hatRegion);
-        let nonZeroHat = cv.countNonZero(hatRoi);
-        if (nonZeroHat / totalPixels > hatThreshold) {
-            detectedFeatures.has_hat = true;
-            detectedFeatures.hat_color = this.getColorInRegion(src, hatRegion);
-        }
-        hatRoi.delete();
-
-        // Eye Color (simplified: average color in eye region)
-        detectedFeatures.eye_color = this.getColorInRegion(src, eyeRegion1); // Use one eye for simplicity
-
-        // Complexion (simplified: average color in a central face region)
-        // Complexion (simplified: average color in a central face region)
-        let complexionRoi = src.roi(complexionRegion);
-        let avgColor = cv.mean(complexionRoi);
-        complexionRoi.delete();
-        let lightness = (Math.max(avgColor[0], avgColor[1], avgColor[2]) + Math.min(avgColor[0], avgColor[1], avgColor[2])) / 2;
-
-        if (lightness > 220) detectedFeatures.complexion = "pale";
-        else if (lightness > 180) detectedFeatures.complexion = "light";
-        else if (lightness > 140) detectedFeatures.complexion = "medium";
-        else if (lightness > 100) detectedFeatures.complexion = "tan";
-        else detectedFeatures.complexion = "dark";
-
-
-        // Nose Shape (Placeholder - requires advanced techniques)
-        // This is highly complex and would need advanced contour analysis or ML
-        detectedFeatures.nose_shape = "unknown";
-
-        // Lip Fullness and Color
-        let lipRoi = gray.roi(lipRegion);
-        let nonZeroLip = cv.countNonZero(lipRoi);
-        if (nonZeroLip / totalPixels > 0.0005) { // Basic threshold for lips drawn
-            detectedFeatures.lip_color = this.getColorInRegion(src, lipRegion);
-            // Very basic fullness based on height of drawn lips
-            if (lipRegion.height > canvas.height * 0.04) {
-                detectedFeatures.lip_fullness = "full";
-            } else if (lipRegion.height > canvas.height * 0.02) {
-                detectedFeatures.lip_fullness = "medium";
+        if (targetFeatures.hasOwnProperty('has_mustache')) {
+            let mustacheRoi = gray.roi(mustacheRegion);
+            let nonZeroMustache = cv.countNonZero(mustacheRoi);
+            if (nonZeroMustache / totalPixels > mustacheThreshold) {
+                detectedFeatures.has_mustache = true;
+                detectedFeatures.mustache_color = this.getColorInRegion(src, mustacheRegion);
             } else {
-                detectedFeatures.lip_fullness = "thin";
+                detectedFeatures.has_mustache = false;
+                detectedFeatures.mustache_color = "unknown";
             }
-        } else {
-            detectedFeatures.lip_fullness = "unknown";
-            detectedFeatures.lip_color = "unknown";
-        }
-        lipRoi.delete();
-
-        // Face Shape (Placeholder - requires advanced techniques)
-        // This is very complex, requiring robust face contour detection and analysis
-        detectedFeatures.face_shape = "unknown";
-
-        // Ear Size (Placeholder - requires advanced techniques)
-        // Requires reliable ear detection and size comparison
-        detectedFeatures.ear_size = "unknown";
-
-        // Eyebrow Shape and Color (Placeholder - requires advanced techniques)
-        let eyebrowRoiLeft = gray.roi(eyebrowRegionLeft);
-        let nonZeroEyebrowLeft = cv.countNonZero(eyebrowRoiLeft);
-        eyebrowRoiLeft.delete();
-        let eyebrowRoiRight = gray.roi(eyebrowRegionRight);
-        let nonZeroEyebrowRight = cv.countNonZero(eyebrowRoiRight);
-        eyebrowRoiRight.delete();
-
-        if ((nonZeroEyebrowLeft / totalPixels > 0.0001) || (nonZeroEyebrowRight / totalPixels > 0.0001)) {
-            detectedFeatures.eyebrow_color = this.getColorInRegion(src, eyebrowRegionLeft); // Use left for simplicity
-            detectedFeatures.eyebrow_shape = "thick"; // Simplistic, could be refined
-        } else {
-            detectedFeatures.eyebrow_shape = "thin";
-            detectedFeatures.eyebrow_color = "unknown";
+            mustacheRoi.delete();
         }
 
+        if (targetFeatures.hasOwnProperty('has_beard')) {
+            let beardRoi = gray.roi(beardRegion);
+            let nonZeroBeard = cv.countNonZero(beardRoi);
+            if (nonZeroBeard / totalPixels > beardThreshold) {
+                detectedFeatures.has_beard = true;
+                detectedFeatures.beard_color = this.getColorInRegion(src, beardRegion);
+            } else {
+                detectedFeatures.has_beard = false;
+                detectedFeatures.beard_color = "unknown";
+            }
+            beardRoi.delete();
+        }
 
-        // Hair Texture (Placeholder - requires advanced techniques)
-        // Very difficult to detect from simple drawings
-        detectedFeatures.hair_texture = "unknown";
+        if (targetFeatures.hasOwnProperty('hair_type') || targetFeatures.hasOwnProperty('hair_color')) {
+            let hairRoi = gray.roi(hairRegion);
+            let nonZeroHair = cv.countNonZero(hairRoi);
+            if (nonZeroHair / totalPixels > hairThreshold) {
+                detectedFeatures.hair_color = this.getColorInRegion(src, hairRegion);
+                if (nonZeroHair / totalPixels > 0.005) {
+                    detectedFeatures.hair_type = "long";
+                } else if (nonZeroHair / totalPixels > 0.002) {
+                    detectedFeatures.hair_type = "medium";
+                } else {
+                    detectedFeatures.hair_type = "short";
+                }
+            } else {
+                detectedFeatures.hair_type = "bald";
+                detectedFeatures.hair_color = "none";
+            }
+            hairRoi.delete();
+        }
 
-        // Facial Hair Style (Placeholder - requires advanced techniques)
-        // Requires more granular analysis of beard/mustache shapes
-        if (detectedFeatures.has_mustache && detectedFeatures.has_beard) {
-            detectedFeatures.facial_hair_style = "full_beard"; // Simplistic
-        } else if (detectedFeatures.has_mustache) {
-            detectedFeatures.facial_hair_style = "mustache";
-        } else if (detectedFeatures.has_beard) {
-            detectedFeatures.facial_hair_style = "beard";
-        } else {
-            detectedFeatures.facial_hair_style = "clean_shaven";
+        if (targetFeatures.hasOwnProperty('has_hat')) {
+            let hatRoi = gray.roi(hatRegion);
+            let nonZeroHat = cv.countNonZero(hatRoi);
+            if (nonZeroHat / totalPixels > hatThreshold) {
+                detectedFeatures.has_hat = true;
+                detectedFeatures.hat_color = this.getColorInRegion(src, hatRegion);
+            } else {
+                detectedFeatures.has_hat = false;
+                detectedFeatures.hat_color = "unknown";
+            }
+            hatRoi.delete();
+        }
+
+        if (targetFeatures.hasOwnProperty('eye_color')) {
+            detectedFeatures.eye_color = this.getColorInRegion(src, eyeRegion1);
+        }
+
+        if (targetFeatures.hasOwnProperty('complexion')) {
+            let complexionRoi = src.roi(complexionRegion);
+            let avgColor = cv.mean(complexionRoi);
+            complexionRoi.delete();
+            let lightness = (Math.max(avgColor[0], avgColor[1], avgColor[2]) + Math.min(avgColor[0], avgColor[1], avgColor[2])) / 2;
+
+            if (lightness > 220) detectedFeatures.complexion = "pale";
+            else if (lightness > 180) detectedFeatures.complexion = "light";
+            else if (lightness > 140) detectedFeatures.complexion = "medium";
+            else if (lightness > 100) detectedFeatures.complexion = "tan";
+            else detectedFeatures.complexion = "dark";
+        }
+
+
+        if (targetFeatures.hasOwnProperty('nose_shape')) {
+            detectedFeatures.nose_shape = "unknown";
+        }
+
+        if (targetFeatures.hasOwnProperty('lip_fullness') || targetFeatures.hasOwnProperty('lip_color')) {
+            let lipRoi = gray.roi(lipRegion);
+            let nonZeroLip = cv.countNonZero(lipRoi);
+            if (nonZeroLip / totalPixels > 0.0005) {
+                detectedFeatures.lip_color = this.getColorInRegion(src, lipRegion);
+                if (lipRegion.height > canvas.height * 0.04) {
+                    detectedFeatures.lip_fullness = "full";
+                } else if (lipRegion.height > canvas.height * 0.02) {
+                    detectedFeatures.lip_fullness = "medium";
+                } else {
+                    detectedFeatures.lip_fullness = "thin";
+                }
+            } else {
+                detectedFeatures.lip_fullness = "unknown";
+                detectedFeatures.lip_color = "unknown";
+            }
+            lipRoi.delete();
+        }
+
+        if (targetFeatures.hasOwnProperty('face_shape')) {
+            detectedFeatures.face_shape = "unknown";
+        }
+
+        if (targetFeatures.hasOwnProperty('ear_size')) {
+            detectedFeatures.ear_size = "unknown";
+        }
+
+        if (targetFeatures.hasOwnProperty('eyebrow_shape') || targetFeatures.hasOwnProperty('eyebrow_color')) {
+            let eyebrowRoiLeft = gray.roi(eyebrowRegionLeft);
+            let nonZeroEyebrowLeft = cv.countNonZero(eyebrowRoiLeft);
+            eyebrowRoiLeft.delete();
+            let eyebrowRoiRight = gray.roi(eyebrowRegionRight);
+            let nonZeroEyebrowRight = cv.countNonZero(eyebrowRoiRight);
+            eyebrowRoiRight.delete();
+
+            if ((nonZeroEyebrowLeft / totalPixels > 0.0001) || (nonZeroEyebrowRight / totalPixels > 0.0001)) {
+                detectedFeatures.eyebrow_color = this.getColorInRegion(src, eyebrowRegionLeft);
+                detectedFeatures.eyebrow_shape = "thick";
+            } else {
+                detectedFeatures.eyebrow_shape = "thin";
+                detectedFeatures.eyebrow_color = "unknown";
+            }
+        }
+
+
+        if (targetFeatures.hasOwnProperty('hair_texture')) {
+            detectedFeatures.hair_texture = "unknown";
+        }
+
+        if (targetFeatures.hasOwnProperty('facial_hair_style')) {
+            if (detectedFeatures.has_mustache && detectedFeatures.has_beard) {
+                detectedFeatures.facial_hair_style = "full_beard";
+            } else if (detectedFeatures.has_mustache) {
+                detectedFeatures.facial_hair_style = "mustache";
+            } else if (detectedFeatures.has_beard) {
+                detectedFeatures.facial_hair_style = "beard";
+            } else {
+                detectedFeatures.facial_hair_style = "clean_shaven";
+            }
         }
 
 
