@@ -1,11 +1,22 @@
 // game.js
+import { INITIAL_TIME_LEFT } from './config.js';
+
 export class Game {
     constructor(criminalData) {
-        this.criminalData = criminalData;
+        if (!Array.isArray(criminalData) || criminalData.length === 0) {
+            console.error("Game initialization error: criminalData must be a non-empty array.");
+            // Optionally, throw an error or handle gracefully, e.g., by disabling game features
+            // For now, we'll just log and proceed with an empty array to prevent crashes.
+            this.criminalData = [];
+        } else {
+            this.criminalData = criminalData;
+        }
         this.currentCriminalIndex = 0;
-        this.timeLeft = 30;
+        this.timeLeft = INITIAL_TIME_LEFT;
         this.timerInterval = null;
         this.gameMode = 'drawing'; // 'drawing' or 'sticker'
+        this.faceClassifier = new cv.CascadeClassifier();
+        this.eyeClassifier = new cv.CascadeClassifier();
 
         this.mainScreen = document.getElementById('mainScreen');
         this.gameScreen = document.getElementById('gameScreen');
@@ -17,7 +28,6 @@ export class Game {
         this.brushSizePalette = document.querySelector('.brush-size-palette');
         this.eraserBtn = document.getElementById('eraserBtn');
         this.criminalDescriptionElem = document.getElementById('criminalDescription');
-        this.timeLeftElem = document.getElementById('timeLeft');
         this.submitBtn = document.getElementById('submitBtn');
         this.scoreElem = document.getElementById('score');
         this.nextCriminalBtn = document.getElementById('nextCriminalBtn');
@@ -37,8 +47,13 @@ export class Game {
         this.initEventListeners();
         this.shuffleCriminals();
         this.loadCriminalProfile();
-        this.startTimer();
         this.initCanvasSettings();
+        this.boundStartDrawing = this.startDrawing.bind(this);
+        this.boundDraw = this.draw.bind(this);
+        this.boundStopDrawing = this.stopDrawing.bind(this);
+        this.boundHandleCanvasClick = this.handleCanvasClick.bind(this);
+
+        this.loadClassifiers();
     }
 
     shuffleCriminals() {
@@ -61,33 +76,36 @@ export class Game {
         this.popupCloseBtn.addEventListener('click', () => this.hidePopup());
         this.debugToggleBtn.addEventListener('click', () => this.toggleDebugFeatures());
 
-        this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
-        this.canvas.addEventListener('mousemove', (e) => this.draw(e));
-        this.canvas.addEventListener('mouseup', () => this.stopDrawing());
-        this.canvas.addEventListener('mouseout', () => this.stopDrawing());
+        this.canvas.addEventListener('mousedown', this.boundStartDrawing);
+        this.canvas.addEventListener('mousemove', this.boundDraw);
+        this.canvas.addEventListener('mouseup', this.boundStopDrawing);
+        this.canvas.addEventListener('mouseout', this.boundStopDrawing);
     }
 
     startGame(mode) {
         this.gameMode = mode;
         this.mainScreen.classList.remove('active');
         this.gameScreen.classList.add('active');
+        this.timeLeftElem = document.getElementById('timeLeft'); // Initialize here
+        this.timeLeftElem.textContent = `${Math.floor(this.timeLeft / 60)}:${this.timeLeft % 60 < 10 ? '0' : ''}${this.timeLeft % 60}`; // Initialize display
+        this.startTimer(); // Start timer when game mode is selected
 
         if (this.gameMode === 'drawing') {
             this.drawingTools.style.display = 'block';
             this.stickerGallery.style.display = 'none';
-            this.canvas.removeEventListener('click', (e) => this.handleCanvasClick(e)); // Remove sticker click listener
-            this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
-            this.canvas.addEventListener('mousemove', (e) => this.draw(e));
-            this.canvas.addEventListener('mouseup', () => this.stopDrawing());
-            this.canvas.addEventListener('mouseout', () => this.stopDrawing());
+            this.canvas.removeEventListener('click', this.boundHandleCanvasClick); // Remove sticker click listener
+            this.canvas.addEventListener('mousedown', this.boundStartDrawing);
+            this.canvas.addEventListener('mousemove', this.boundDraw);
+            this.canvas.addEventListener('mouseup', this.boundStopDrawing);
+            this.canvas.addEventListener('mouseout', this.boundStopDrawing);
         } else if (this.gameMode === 'sticker') {
             this.drawingTools.style.display = 'none';
             this.stickerGallery.style.display = 'block';
-            this.canvas.removeEventListener('mousedown', (e) => this.startDrawing(e)); // Remove drawing listeners
-            this.canvas.removeEventListener('mousemove', (e) => this.draw(e));
-            this.canvas.removeEventListener('mouseup', () => this.stopDrawing());
-            this.canvas.removeEventListener('mouseout', () => this.stopDrawing());
-            this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e)); // Add sticker click listener
+            this.canvas.removeEventListener('mousedown', this.boundStartDrawing); // Remove drawing listeners
+            this.canvas.removeEventListener('mousemove', this.boundDraw);
+            this.canvas.removeEventListener('mouseup', this.boundStopDrawing);
+            this.canvas.removeEventListener('mouseout', this.boundStopDrawing);
+            this.canvas.addEventListener('click', this.boundHandleCanvasClick); // Add sticker click listener
         }
     }
 
@@ -123,7 +141,8 @@ export class Game {
         }
         this.loadCriminalProfile();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.timeLeft = 30;
+        this.timeLeft = INITIAL_TIME_LEFT;
+        this.timeLeftElem.textContent = `${Math.floor(this.timeLeft / 60)}:${this.timeLeft % 60 < 10 ? '0' : ''}${this.timeLeft % 60}`; // Reset display
         this.startTimer();
         this.scoreElem.textContent = '0';
     }
@@ -321,28 +340,47 @@ export class Game {
         roi.delete();
 
         // Reshape to a 1D array of pixels
-        let data = colors.data;
+        let hsv = new cv.Mat();
+        cv.cvtColor(colors, hsv, cv.COLOR_RGB2HSV);
+        let data = hsv.data; // Now data is HSV
 
         let colorCounts = {};
-        for (let i = 0; i < data.length; i += 3) { // RGB
-            let r = data[i];
-            let g = data[i + 1];
-            let b = data[i + 2];
-            // Simple quantization for common colors
+        for (let i = 0; i < data.length; i += 3) { // HSV
+            let h = data[i];
+            let s = data[i + 1];
+            let v = data[i + 2];
+
             let colorName = "other";
-            if (r < 50 && g < 50 && b < 50) colorName = "black";
-            else if (r > 200 && g > 200 && b > 200) colorName = "white";
-            else if (r > 150 && g < 100 && b < 100) colorName = "red";
-            else if (r < 100 && g < 100 && b > 150) colorName = "blue";
-            else if (r < 100 && g > 150 && b < 100) colorName = "green";
-            else if (r > 100 && r < 200 && g > 50 && g < 150 && b < 100) colorName = "brown";
-            else if (r > 200 && g > 200 && b < 100) colorName = "blonde"; // Yellowish
-            else if (r > 150 && g > 150 && b > 150) colorName = "gray"; // Light gray
-            else if (r > 100 && r < 200 && g > 100 && g < 200 && b > 100 && b < 200) colorName = "silver"; // Medium gray
-            else if (r > 200 && g > 150 && b < 100) colorName = "gold"; // Orange-yellowish
+
+            // Black, White, Gray
+            if (v < 50) colorName = "black"; // Very low value (dark)
+            else if (s < 30 && v > 200) colorName = "white"; // Low saturation, high value (light)
+            else if (s < 50 && v > 100 && v < 200) colorName = "gray"; // Low saturation, medium value
+
+            // Primary/Secondary Colors (adjust ranges as needed)
+            else if (h >= 0 && h <= 10 || h >= 170 && h <= 180) colorName = "red"; // Red (0-10, 170-180)
+            else if (h >= 20 && h <= 35) colorName = "gold"; // Orange/Gold
+            else if (h >= 40 && h <= 70) colorName = "blonde"; // Yellow/Blonde
+            else if (h >= 80 && h <= 100) colorName = "green"; // Green
+            else if (h >= 110 && h <= 130) colorName = "blue"; // Blue
+            else if (h >= 140 && h <= 160) colorName = "silver"; // Purple/Silver (adjust if silver is more gray)
+
+            // Brown (often low saturation, specific hue range)
+            else if (h >= 10 && h <= 25 && s > 50 && s < 150 && v > 50 && v < 150) colorName = "brown";
+
+            // Skin Tones (more complex, often in orange/yellow hue range with varying saturation/value)
+            // These ranges are approximate and might need significant tuning
+            else if (h >= 5 && h <= 25 && s >= 20 && s <= 100 && v >= 100 && v <= 255) {
+                if (v > 220) colorName = "pale";
+                else if (v > 180) colorName = "light";
+                else if (v > 140) colorName = "medium";
+                else if (v > 100) colorName = "tan";
+                else colorName = "dark";
+            }
 
             colorCounts[colorName] = (colorCounts[colorName] || 0) + 1;
         }
+        hsv.delete(); // Delete the HSV Mat
         colors.delete();
 
         let dominantColor = "unknown";
@@ -407,7 +445,21 @@ export class Game {
                     glassesCount++;
                 }
             }
-            if (glassesCount >= 2 && density > glassesThreshold) {
+            // Calculate localized densities for eye regions
+            let eyeRoi1 = gray.roi(eyeRegion1);
+            let nonZeroEye1 = cv.countNonZero(eyeRoi1);
+            let eyeDensity1 = nonZeroEye1 / (eyeRegion1.width * eyeRegion1.height);
+            eyeRoi1.delete();
+
+            let eyeRoi2 = gray.roi(eyeRegion2);
+            let nonZeroEye2 = cv.countNonZero(eyeRoi2);
+            let eyeDensity2 = nonZeroEye2 / (eyeRegion2.width * eyeRegion2.height);
+            eyeRoi2.delete();
+
+            // A more appropriate threshold for localized eye region density
+            const localizedGlassesThreshold = 0.1; // This value might need tuning
+
+            if (glassesCount >= 2 && (eyeDensity1 > localizedGlassesThreshold || eyeDensity2 > localizedGlassesThreshold)) {
                 detectedFeatures.has_glasses = true;
                 detectedFeatures.glasses_color = this.getColorInRegion(src, eyeRegion1);
             } else {
@@ -493,7 +545,32 @@ export class Game {
 
 
         if (targetFeatures.hasOwnProperty('nose_shape')) {
-            detectedFeatures.nose_shape = "unknown";
+            let noseRoi = gray.roi(noseRegion);
+            let noseContours = new cv.MatVector();
+            let noseHierarchy = new cv.Mat();
+            cv.findContours(noseRoi, noseContours, noseHierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+            if (noseContours.size() > 0) {
+                let largestContourArea = 0;
+                for (let i = 0; i < noseContours.size(); ++i) {
+                    let cnt = noseContours.get(i);
+                    let area = cv.contourArea(cnt);
+                    if (area > largestContourArea) {
+                        largestContourArea = area;
+                    }
+                    cnt.delete();
+                }
+                if (largestContourArea > 50) {
+                    detectedFeatures.nose_shape = "defined";
+                } else {
+                    detectedFeatures.nose_shape = "subtle";
+                }
+            } else {
+                detectedFeatures.nose_shape = "none";
+            }
+            noseRoi.delete();
+            noseContours.delete();
+            noseHierarchy.delete();
         }
 
         if (targetFeatures.hasOwnProperty('lip_fullness') || targetFeatures.hasOwnProperty('lip_color')) {
@@ -516,11 +593,34 @@ export class Game {
         }
 
         if (targetFeatures.hasOwnProperty('face_shape')) {
-            detectedFeatures.face_shape = "unknown";
+            let faceRoi = gray.roi(faceRegion);
+            let nonZeroFace = cv.countNonZero(faceRoi);
+            let faceDensity = nonZeroFace / (faceRegion.width * faceRegion.height);
+            faceRoi.delete();
+
+            if (faceDensity > 0.05) {
+                detectedFeatures.face_shape = "present";
+            } else {
+                detectedFeatures.face_shape = "undefined";
+            }
         }
 
         if (targetFeatures.hasOwnProperty('ear_size')) {
-            detectedFeatures.ear_size = "unknown";
+            let earRoiLeft = gray.roi(earRegionLeft);
+            let nonZeroEarLeft = cv.countNonZero(earRoiLeft);
+            earRoiLeft.delete();
+
+            let earRoiRight = gray.roi(earRegionRight);
+            let nonZeroEarRight = cv.countNonZero(earRoiRight);
+            earRoiRight.delete();
+
+            const earThreshold = 0.0001;
+
+            if ((nonZeroEarLeft / totalPixels > earThreshold) || (nonZeroEarRight / totalPixels > earThreshold)) {
+                detectedFeatures.ear_size = "visible";
+            } else {
+                detectedFeatures.ear_size = "hidden";
+            }
         }
 
         if (targetFeatures.hasOwnProperty('eyebrow_shape') || targetFeatures.hasOwnProperty('eyebrow_color')) {
@@ -564,5 +664,12 @@ export class Game {
         hierarchy.delete();
 
         return detectedFeatures;
+    }
+
+    loadClassifiers() {
+        // Load face cascade
+        this.faceClassifier.load('images/haarcascades/haarcascade_frontalface_default.xml');
+        // Load eye cascade
+        this.eyeClassifier.load('images/haarcascades/haarcascade_eye.xml');
     }
 }

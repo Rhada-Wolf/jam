@@ -24,18 +24,20 @@ async function initGame() {
     }
 }
 
-// Ensure OpenCV.js is loaded before initializing the game
-if (typeof cv !== 'undefined' && cv.Mat) {
-    console.log("OpenCV.js is ready. Initializing game...");
-    initGame();
-} else {
-    console.log("OpenCV.js not yet ready. Polling...");
-    // Poll for OpenCV.js to be ready
-    const interval = setInterval(() => {
-        if (typeof cv !== 'undefined' && cv.Mat) {
-            clearInterval(interval);
-            console.log("OpenCV.js is now ready. Initializing game...");
-            initGame();
-        }
-    }, 100);
-}
+// Ensure OpenCV.js is loaded and DOM is ready before initializing the game
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof cv !== 'undefined' && cv.Mat) {
+        console.log("OpenCV.js is ready and DOM is loaded. Initializing game...");
+        initGame();
+    } else {
+        console.log("OpenCV.js not yet ready. Polling...");
+        // Poll for OpenCV.js to be ready
+        const interval = setInterval(() => {
+            if (typeof cv !== 'undefined' && cv.Mat) {
+                clearInterval(interval);
+                console.log("OpenCV.js is now ready and DOM is loaded. Initializing game...");
+                initGame();
+            }
+        }, 100);
+    }
+});
