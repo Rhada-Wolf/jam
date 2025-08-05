@@ -1,1 +1,1 @@
-export const INITIAL_TIME_LEFT = 5; // Initial time in seconds for the game timer
+export const INITIAL_TIME_LEFT = 180; // Initial time in seconds for the game timer

@@ -17,6 +17,21 @@
     <div id="gameScreen" class="screen">
         <h1>Rogue's Gallery: Police Sketch Artist</h1>
 
+        <div class="sticker-gallery">
+            <h3>Stickers:</h3>
+            <div class="sticker-controls">
+                <div class="sticker-size-palette">
+                    <div class="sticker-size-swatch" data-scale="1.0"></div>
+                    <div class="sticker-size-swatch" data-scale="0.66"></div>
+                    <div class="sticker-size-swatch" data-scale="0.33"></div>
+                </div>
+                <button id="stickerEraserBtn">Eraser</button>
+            </div>
+            <div id="stickerImageContainer" class="sticker-image-container">
+                <!-- Sticker images will be dynamically loaded here by JavaScript -->
+            </div>
+        </div>
+
         <div class="controls">
             <label>Brush Color:</label>
             <div id="colorPalette" class="color-palette">
@@ -53,12 +68,6 @@
             <ul id="detectedFeaturesList"></ul>
             <h3>Target Features:</h3>
             <ul id="targetFeaturesList"></ul>
-        </div>
-
-        <div class="sticker-gallery">
-            <h3>Stickers:</h3>
-            <img src="images/stickers/sticker1.png" alt="Sticker 1" class="sticker" data-sticker-src="images/stickers/sticker1.png">
-            <img src="images/stickers/sticker2.png" alt="Sticker 2" class="sticker" data-sticker-src="images/stickers/sticker2.png">
         </div>
     </div>
 

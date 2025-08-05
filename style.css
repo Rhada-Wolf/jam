@@ -392,18 +392,15 @@ button#submitBtn:hover, button#nextCriminalBtn:hover {
 }
 
 .sticker-gallery {
-    margin-top: 30px;
-    border: 1px solid #ced4da;
-    padding: 20px;
-    background-color: #ffffff;
-    width: 800px;
-    box-sizing: border-box;
+    margin-bottom: 20px; /* Adjusted margin to move it up */
+    padding: 15px;
+    background-color: #f8f9fa;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column; /* Arrange children vertically */
+    align-items: center;
     gap: 15px;
-    justify-content: center;
 }
 
 .sticker-gallery h3 {
@@ -430,4 +427,74 @@ button#submitBtn:hover, button#nextCriminalBtn:hover {
 .sticker:hover {
     transform: scale(1.1);
     border-color: #007bff;
+}
+
+.sticker-size-palette {
+    display: flex;
+    gap: 5px;
+    margin-left: 10px;
+}
+
+.sticker-size-swatch {
+    background-color: #007bff;
+    border: 1px solid #0056b3;
+    border-radius: 50%; /* Make it a circle */
+    cursor: pointer;
+    transition: transform 0.1s ease, border-color 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.sticker-size-swatch[data-scale="1.0"] {
+    width: 25px;
+    height: 25px;
+}
+
+.sticker-size-swatch[data-scale="0.66"] {
+    width: 20px;
+    height: 20px;
+}
+
+.sticker-size-swatch[data-scale="0.33"] {
+    width: 15px;
+    height: 15px;
+}
+
+.sticker-size-swatch:hover {
+    transform: scale(1.1);
+    border-color: #004085;
+}
+
+.sticker-size-swatch.selected {
+    border: 2px solid #004085;
+    transform: scale(1.05);
+}
+
+#stickerEraserBtn {
+    padding: 8px 15px;
+    font-size: 0.9em;
+    background-color: #dc3545; /* Red color for eraser */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+#stickerEraserBtn:hover {
+    background-color: #c82333;
+}
+.sticker-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px; /* Space between controls and images */
+}
+
+.sticker-image-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    width: 100%; /* Take full width of parent */
 }

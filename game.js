@@ -34,6 +34,10 @@ export class Game {
         this.detectedFeaturesListElem = document.getElementById('detectedFeaturesList');
         this.targetFeaturesListElem = document.getElementById('targetFeaturesList');
         this.stickerGallery = document.querySelector('.sticker-gallery');
+        this.stickerControls = document.querySelector('.sticker-controls'); // New element
+        this.stickerSizePalette = document.querySelector('.sticker-size-palette');
+        this.stickerEraserBtn = document.getElementById('stickerEraserBtn');
+        this.stickerImageContainer = document.getElementById('stickerImageContainer'); // New element
         this.debugToggleBtn = document.getElementById('debugToggleBtn');
         this.gamePopup = document.getElementById('gamePopup');
         this.popupMessageElem = document.getElementById('popupMessage');
@@ -43,6 +47,8 @@ export class Game {
         this.isDrawing = false;
         this.isErasing = false;
         this.selectedSticker = null;
+        this.currentStickerScale = 1.0; // Default sticker scale
+        this.stickerImages = []; // To store loaded sticker images
 
         this.initEventListeners();
         this.shuffleCriminals();
@@ -54,6 +60,7 @@ export class Game {
         this.boundHandleCanvasClick = this.handleCanvasClick.bind(this);
 
         this.loadClassifiers();
+        this.loadStickerImages(); // Load sticker images on game initialization
     }
 
     shuffleCriminals() {
@@ -67,11 +74,13 @@ export class Game {
         this.startGameBtn.addEventListener('click', () => this.startGame('drawing'));
         this.startStickerGameBtn.addEventListener('click', () => this.startGame('sticker')); // New event listener
         this.stickerGallery.addEventListener('click', (e) => this.handleStickerSelection(e));
+        this.stickerSizePalette.addEventListener('click', (e) => this.handleStickerSizeSelection(e));
+        this.stickerEraserBtn.addEventListener('click', () => this.activateStickerEraser());
         this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
         this.nextCriminalBtn.addEventListener('click', () => this.nextCriminal());
         this.colorPalette.addEventListener('click', (e) => this.handleColorPaletteClick(e));
         this.brushSizePalette.addEventListener('click', (e) => this.handleBrushSizeClick(e));
-        this.eraserBtn.addEventListener('click', () => this.activateEraser());
+        this.eraserBtn.addEventListener('click', () => this.activateDrawingEraser());
         this.submitBtn.addEventListener('click', () => this.submitSketch());
         this.popupCloseBtn.addEventListener('click', () => this.hidePopup());
         this.debugToggleBtn.addEventListener('click', () => this.toggleDebugFeatures());
@@ -91,21 +100,25 @@ export class Game {
         this.startTimer(); // Start timer when game mode is selected
 
         if (this.gameMode === 'drawing') {
-            this.drawingTools.style.display = 'block';
+            this.drawingTools.style.display = 'flex'; // Use flex for controls
             this.stickerGallery.style.display = 'none';
             this.canvas.removeEventListener('click', this.boundHandleCanvasClick); // Remove sticker click listener
             this.canvas.addEventListener('mousedown', this.boundStartDrawing);
             this.canvas.addEventListener('mousemove', this.boundDraw);
             this.canvas.addEventListener('mouseup', this.boundStopDrawing);
             this.canvas.addEventListener('mouseout', this.boundStopDrawing);
+            this.canvas.style.cursor = 'crosshair'; // Default drawing cursor
         } else if (this.gameMode === 'sticker') {
             this.drawingTools.style.display = 'none';
-            this.stickerGallery.style.display = 'block';
+            this.stickerGallery.style.display = 'flex'; // Use flex for sticker gallery
+            this.stickerControls.style.display = 'flex'; // Show sticker controls
+            this.stickerImageContainer.style.display = 'flex'; // Show sticker image container
             this.canvas.removeEventListener('mousedown', this.boundStartDrawing); // Remove drawing listeners
             this.canvas.removeEventListener('mousemove', this.boundDraw);
             this.canvas.removeEventListener('mouseup', this.boundStopDrawing);
             this.canvas.removeEventListener('mouseout', this.boundStopDrawing);
             this.canvas.addEventListener('click', this.boundHandleCanvasClick); // Add sticker click listener
+            this.canvas.style.cursor = 'copy'; // Change cursor to copy when in sticker mode
         }
     }
 
@@ -126,10 +139,23 @@ export class Game {
             const img = new Image();
             img.src = this.selectedSticker.dataset.stickerSrc;
             img.onload = () => {
-                this.ctx.drawImage(img, e.offsetX - img.width / 2, e.offsetY - img.height / 2, img.width, img.height);
+                const originalWidth = img.width;
+                const originalHeight = img.height;
+                const scaledWidth = originalWidth * this.currentStickerScale;
+                const scaledHeight = originalHeight * this.currentStickerScale;
+
+                // Calculate position to center the sticker at the click point
+                const x = e.offsetX - scaledWidth / 2;
+                const y = e.offsetY - scaledHeight / 2;
+                this.ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
             };
             this.selectedSticker.style.border = '1px solid #eee';
             this.selectedSticker = null;
+        } else if (this.isErasing) {
+            // Implement sticker eraser functionality here
+            // For now, a simple clearRect around the click
+            const eraseSize = 50; // Size of the eraser
+            this.ctx.clearRect(e.offsetX - eraseSize / 2, e.offsetY - eraseSize / 2, eraseSize, eraseSize);
         }
     }
 
@@ -249,9 +275,24 @@ export class Game {
         }
     }
 
-    activateEraser() {
+    activateDrawingEraser() {
         this.isErasing = true;
         this.ctx.strokeStyle = '#fff';
+        // Deselect any sticker when activating drawing eraser
+        if (this.selectedSticker) {
+            this.selectedSticker.style.border = '1px solid #eee';
+            this.selectedSticker = null;
+        }
+    }
+
+    activateStickerEraser() {
+        this.isErasing = true;
+        this.selectedSticker = null; // Deselect any sticker
+        // Remove selected class from sticker sizes
+        Array.from(this.stickerSizePalette.children).forEach(child => {
+            child.classList.remove('selected');
+        });
+        this.canvas.style.cursor = 'url("data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"30\" height=\"30\" viewBox=\"0 0 30 30\"><circle cx=\"15\" cy=\"15\" r=\"10\" fill=\"white\" stroke=\"black\" stroke-width=\"2\"/></svg>") 15 15, auto';
     }
 
     startDrawing(e) {
@@ -666,10 +707,54 @@ export class Game {
         return detectedFeatures;
     }
 
+    handleStickerSizeSelection(e) {
+        if (e.target.classList.contains('sticker-size-swatch')) {
+            this.currentStickerScale = parseFloat(e.target.dataset.scale);
+            this.isErasing = false; // Turn off eraser when sticker size is picked
+            // Optional: Add a visual cue for selected sticker size
+            Array.from(this.stickerSizePalette.children).forEach(child => {
+                child.classList.remove('selected');
+            });
+            e.target.classList.add('selected');
+            this.canvas.style.cursor = 'copy'; // Reset cursor to copy
+        }
+    }
+
     loadClassifiers() {
         // Load face cascade
         this.faceClassifier.load('images/haarcascades/haarcascade_frontalface_default.xml');
         // Load eye cascade
         this.eyeClassifier.load('images/haarcascades/haarcascade_eye.xml');
+    }
+
+    async loadStickerImages() {
+        const stickerPaths = [
+            'images/stickers/eyes1.jpeg',
+            'images/stickers/eyes2.jpeg',
+            'images/stickers/mouth1.jpeg',
+            'images/stickers/mouth2.jpeg',
+            'images/stickers/nose1.jpeg',
+            'images/stickers/nose2.jpeg',
+            'images/stickers/sticker1.png',
+            'images/stickers/sticker2.png'
+        ];
+
+        const stickerImageContainer = document.getElementById('stickerImageContainer');
+        stickerImageContainer.innerHTML = ''; // Clear existing content
+
+        for (const path of stickerPaths) {
+            const img = new Image();
+            img.src = path;
+            img.classList.add('sticker');
+            img.dataset.stickerSrc = path;
+            img.alt = path.split('/').pop(); // Use filename as alt text
+            stickerImageContainer.appendChild(img);
+        }
+
+        // Initialize default sticker size selection
+        const defaultStickerSizeSwatch = this.stickerSizePalette.querySelector('[data-scale="1.0"]');
+        if (defaultStickerSizeSwatch) {
+            defaultStickerSizeSwatch.classList.add('selected');
+        }
     }
 }
