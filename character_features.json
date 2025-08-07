@@ -1,0 +1,68 @@
+{
+  "gender": {
+    "target": ["male", "female", "other"]
+  },
+  "age": {
+    "target": ["young", "adult", "old"]
+  },
+  "skin": {
+    "target": ["pale", "light", "olive", "tan", "dark"]
+  },
+  "face_shape": {
+    "target": ["long", "round", "oval", "square", "heart", "diamond"]
+  },
+  "haircut": {
+    "target": [
+      "male_pompadour",
+      "male_buzz_cut",
+      "male_caesar_cut",
+      "male_afro",
+      "male_crop_top",
+      "male_dreadlocks",
+      "male_spiky",
+      "male_bowl_cut",
+      "male_long_hair",
+      "male_bald",
+      "male_receding_hairline",
+      "female_pixie_cut",
+      "female_bob_cut",
+      "female_lob_cut",
+      "female_shag_cut",
+      "female_blunt_cut",
+      "female_crop_cut",
+      "female_mohawk",
+      "female_bowl_cut",
+      "female_tapered_cut",
+      "female_bangs",
+      "female_shaven"
+    ]
+  },
+  "hair_color": {
+    "target": ["silver", "black", "brown", "copper", "blonde", "sandy", "red"]
+  },
+  "eye_color": {
+    "target": ["green", "hazel", "blue", "brown", "grey"]
+  },
+  "nose_shape": {
+    "target": ["hooked", "aquiline", "button", "upturned", "snub"]
+  },
+  "ears": {
+    "target": [
+      "normal__big",
+      "protruding__big",
+      "normal__medium",
+      "protruding__medium",
+      "normal__small",
+      "protruding__small"
+    ]
+  },
+  "mouth": {
+    "target": ["full_lips", "wide_lips", "narrow_lips", "round_lips"]
+  },
+  "beard": {
+    "target": {
+      "beard": ["shaven", "stubble", "goatee", "full_beard", "circle_beard", "neck_beard"],
+      "mustache": ["shaven", "walrus", "pencil", "english", "horseshoe"]
+    }
+  }
+}

@@ -1,0 +1,558 @@
+{
+	"gender": {
+		"male": [
+			"Subject is male.",
+			"Individual identified as male.",
+			"Reported as male."
+		],
+		"female": [
+			"Subject is female.",
+			"Individual identified as female.",
+			"Reported as female."
+		],
+		"other": [
+			"Subject's gender presentation is ambiguous.",
+			"Individual's sex is not immediately discernible.",
+			"Reported to have an indeterminate gender.",
+			"Physical characteristics do not clearly indicate male or female."
+		]
+	},
+	"skin": {
+		"pale": [
+			"Subject has a very fair skin tone.",
+			"Skin is extremely fair, almost translucent.",
+			"Individual has a very light, almost colorless skin tone.",
+			"Complexion is notably pale, lacking significant pigmentation."
+		],
+		"light": [
+			"Skin is light in color.",
+			"Subject has a light skin tone, consistent with fair complexion.",
+			"Individual's skin is light, without significant tanning or pigmentation.",
+			"Complexion is light, appearing naturally fair."
+		],
+		"olive": [
+			"Subject has a moderate brown, olive skin tone.",
+			"Skin is olive-colored, indicating a moderate brown hue.",
+			"Individual's skin is olive-toned, with a noticeable brownish tint.",
+			"Complexion is olive, suggesting a Mediterranean or similar background."
+		],
+		"tan": [
+			"Subject appears tanned or has naturally brown skin.",
+			"Skin is tan, consistent with sun exposure or natural pigmentation.",
+			"Individual's skin is tan, not appearing pale or dark.",
+			"Complexion is a healthy tan."
+		],
+		"dark": [
+			"Subject has a dark skin complexion.",
+			"Skin is dark, with deep pigmentation.",
+			"Individual's skin is dark.",
+			"Complexion is dark, indicating a rich, deep skin tone."
+		]
+	},
+	"age": {
+		"young": [
+			"Subject appears to be in their youth.",
+			"Individual appears young.",
+			"Estimated age is young."
+		],
+		"adult": [
+			"Subject appears to be an adult.",
+			"Individual appears adult.",
+			"Estimated age is adult."
+		],
+		"old": [
+			"Subject appears to be of advanced age.",
+			"Individual appears old.",
+			"Estimated age is old."
+		]
+	},
+	"face_shape": {
+		"long": [
+			"Subject has a long and slender face.",
+			"Face is noticeably long.",
+			"Facial structure is elongated.",
+			"The individual's face is elongated.",
+			"Reported to have a long facial shape.",
+			"Their face exhibits a long contour.",
+			"The subject's face presents a long form.",
+			"An elongated facial structure was observed."
+		],
+		"round": [
+			"Subject's face is noticeably round.",
+			"Face is round.",
+			"Facial structure is circular.",
+			"The individual's face is distinctly round.",
+			"Reported to have a round facial shape.",
+			"Their face exhibits a round contour.",
+			"The subject's face presents a round form.",
+			"A circular facial structure was observed."
+		],
+		"oval": [
+			"Subject has an oval-shaped face.",
+			"Face is oval.",
+			"Facial structure is oval.",
+			"The individual's face is distinctly oval.",
+			"Reported to have an oval facial shape.",
+			"Their face exhibits an oval contour.",
+			"The subject's face presents an oval form.",
+			"An oval facial structure was observed."
+		],
+		"square": [
+			"Subject is characterized by a square jawline.",
+			"Face is square.",
+			"Facial structure is square.",
+			"The individual's face is distinctly square.",
+			"Reported to have a square facial shape.",
+			"Their face exhibits a square contour.",
+			"The subject's face presents a square form.",
+			"A square facial structure was observed."
+		],
+		"heart": [
+			"Subject's face is wider at the forehead and tapers to a point at the chin.",
+			"Face is heart-shaped.",
+			"Facial structure is heart-shaped.",
+			"The individual's face is distinctly heart-shaped.",
+			"Reported to have a heart facial shape.",
+			"Their face exhibits a heart contour.",
+			"The subject's face presents a heart form.",
+			"A heart-shaped facial structure was observed."
+		],
+		"diamond": [
+			"Subject's face is widest at the cheekbones.",
+			"Face is diamond-shaped.",
+			"Facial structure is diamond-shaped.",
+			"The individual's face is distinctly diamond-shaped.",
+			"Reported to have a diamond facial shape.",
+			"Their face exhibits a diamond contour.",
+			"The subject's face presents a diamond form.",
+			"A diamond-shaped facial structure was observed."
+		]
+	},
+	"haircut": {
+		"male_pompadour": [
+			"Subject sports a pompadour hairstyle.",
+			"Hair styled in a pompadour.",
+			"Pompadour haircut observed.",
+			"The individual's hair is styled in a prominent pompadour.",
+			"A pompadour was noted on the subject."
+		],
+		"male_buzz_cut": [
+			"Subject has a buzz cut.",
+			"Hair is a buzz cut.",
+			"Buzz cut hairstyle noted.",
+			"The individual's hair is cut very short, a buzz cut.",
+			"A buzz cut was observed."
+		],
+		"male_caesar_cut": [
+			"Subject's hair is styled in a Caesar cut.",
+			"Hair styled in a Caesar cut.",
+			"Caesar cut observed.",
+			"The individual's hair is in a Caesar cut.",
+			"A Caesar cut was noted on the subject."
+		],
+		"male_afro": [
+			"Subject has a voluminous afro.",
+			"Hair is a large afro.",
+			"Afro hairstyle noted.",
+			"The individual has a significant afro.",
+			"A voluminous afro was observed."
+		],
+		"male_crop_top": [
+			"Subject features a crop top haircut.",
+			"Hair styled as a crop top.",
+			"Crop top haircut observed.",
+			"The individual's hair is styled in a crop top.",
+			"A crop top haircut was noted on the subject."
+		],
+		"male_dreadlocks": [
+			"Subject wears dreadlocks.",
+			"Hair is in dreadlocks.",
+			"Dreadlocks noted.",
+			"The individual has dreadlocks.",
+			"Dreadlocks were observed on the subject."
+		],
+		"male_spiky": [
+			"Subject's hair is styled in spikes.",
+			"Hair is spiky.",
+			"Spiky hairstyle observed.",
+			"The individual's hair is styled with spikes.",
+			"Spiky hair was noted."
+		],
+		"male_bowl_cut": [
+			"Subject has a bowl cut.",
+			"Hair is a bowl cut.",
+			"Bowl cut hairstyle noted.",
+			"The individual's hair is in a bowl cut.",
+			"A bowl cut was observed."
+		],
+		"male_long_hair": [
+			"Subject has long hair.",
+			"Hair is long.",
+			"Long hair observed.",
+			"The individual's hair extends to a long length.",
+			"Long hair was noted."
+		],
+		"male_bald": [
+			"Subject is bald.",
+			"Head is bald.",
+			"No hair present.",
+			"The individual has no hair on their head.",
+			"Baldness was observed."
+		],
+		"male_receding_hairline": [
+			"Subject shows a receding hairline.",
+			"Hairline is receding.",
+			"Receding hairline noted.",
+			"The individual's hairline is receding.",
+			"A receding hairline was observed."
+		],
+		"female_pixie_cut": [
+			"Subject has a pixie cut.",
+			"Hair is a pixie cut.",
+			"Pixie cut hairstyle noted.",
+			"The individual's hair is styled in a pixie cut.",
+			"A pixie cut was observed."
+		],
+		"female_bob_cut": [
+			"Subject sports a bob cut.",
+			"Hair is a bob cut.",
+			"Bob cut hairstyle noted.",
+			"The individual's hair is in a bob cut.",
+			"A bob cut was observed."
+		],
+		"female_lob_cut": [
+			"Subject has a long bob, or 'lob'.",
+			"Hair is a lob cut.",
+			"Lob cut hairstyle noted.",
+			"The individual's hair is styled as a lob.",
+			"A lob haircut was observed."
+		],
+		"female_shag_cut": [
+			"Subject features a shag haircut.",
+			"Hair is a shag cut.",
+			"Shag haircut observed.",
+			"The individual's hair is in a shag cut.",
+			"A shag haircut was noted."
+		],
+		"female_blunt_cut": [
+			"Subject's hair is in a blunt cut.",
+			"Hair is a blunt cut.",
+			"Blunt cut hairstyle noted.",
+			"The individual's hair is styled in a blunt cut.",
+			"A blunt cut was observed."
+		],
+		"female_crop_cut": [
+			"Subject has a cropped haircut.",
+			"Hair is a crop cut.",
+			"Crop cut hairstyle noted.",
+			"The individual's hair is in a crop cut.",
+			"A crop cut was observed."
+		],
+		"female_mohawk": [
+			"Subject wears a mohawk.",
+			"Hair is a mohawk.",
+			"Mohawk hairstyle noted.",
+			"The individual's hair is styled as a mohawk.",
+			"A mohawk was observed."
+		],
+		"female_bowl_cut": [
+			"Subject has a bowl cut hairstyle.",
+			"Hair is a bowl cut.",
+			"Bowl cut hairstyle noted.",
+			"The individual's hair is in a bowl cut.",
+			"A bowl cut was observed."
+		],
+		"female_tapered_cut": [
+			"Subject's hair is tapered.",
+			"Hair is tapered.",
+			"Tapered haircut observed.",
+			"The individual's hair is tapered.",
+			"A tapered haircut was noted."
+		],
+		"female_bangs": [
+			"Subject has bangs.",
+			"Bangs are present.",
+			"Fringe noted.",
+			"The individual has bangs.",
+			"Bangs were observed."
+		],
+		"female_shaven": [
+			"Subject's head is shaven.",
+			"Head is shaven.",
+			"Shaven head observed.",
+			"The individual's head is shaven.",
+			"A shaven head was noted."
+		]
+	},
+	"hair_color": {
+		"silver": [
+			"Subject's hair is silver or grey.",
+			"Hair is silver.",
+			"Grey hair observed.",
+			"The individual has silver-colored hair.",
+			"Hair color appears grey."
+		],
+		"black": [
+			"Subject has black hair.",
+			"Hair is black.",
+			"Black hair observed.",
+			"The individual's hair is dark, appearing black.",
+			"Hair color is black."
+		],
+		"brown": [
+			"Subject is a brunette.",
+			"Hair is brown.",
+			"Brown hair observed.",
+			"The individual has brown-colored hair.",
+			"Hair color appears brown."
+		],
+		"copper": [
+			"Subject's hair has a copper tone.",
+			"Hair is copper-toned.",
+			"Copper hair observed.",
+			"The individual's hair exhibits a copper hue.",
+			"Hair color is reddish-brown."
+		],
+		"blonde": [
+			"Subject is a blonde.",
+			"Hair is blonde.",
+			"Blonde hair observed.",
+			"The individual has light-colored hair, appearing blonde.",
+			"Hair color is blonde."
+		],
+		"sandy": [
+			"Subject has sandy blonde hair.",
+			"Hair is sandy blonde.",
+			"Sandy blonde hair observed.",
+			"The individual's hair is a sandy blonde shade.",
+			"Hair color appears sandy blonde."
+		],
+		"red": [
+			"Subject is a redhead.",
+			"Hair is red.",
+			"Red hair observed.",
+			"The individual has red-colored hair.",
+			"Hair color is red."
+		]
+	},
+	"eye_color": {
+		"green": [
+			"Subject has green eyes.",
+			"Eyes are green.",
+			"Green eye color noted."
+		],
+		"hazel": [
+			"Subject's eyes are hazel in color.",
+			"Eyes are hazel.",
+			"Hazel eye color noted."
+		],
+		"blue": [
+			"Subject has blue eyes.",
+			"Eyes are blue.",
+			"Blue eye color noted."
+		],
+		"brown": [
+			"Subject has brown eyes.",
+			"Eyes are brown.",
+			"Brown eye color noted."
+		],
+		"grey": [
+			"Subject's eyes are grey.",
+			"Eyes are grey.",
+			"Grey eye color noted."
+		]
+	},
+	"nose_shape": {
+		"hooked": [
+			"Subject's nose is hooked.",
+			"Nose has a hooked appearance.",
+			"A hooked nose was observed.",
+			"The individual's nose is distinctly hooked.",
+			"Reported to have a hooked nose."
+		],
+		"aquiline": [
+			"Subject has an aquiline nose.",
+			"Nose is aquiline.",
+			"An aquiline nose was observed.",
+			"The individual's nose has an aquiline shape.",
+			"Reported to have an aquiline nose."
+		],
+		"button": [
+			"Subject has a small, button-like nose.",
+			"Nose is button-shaped.",
+			"A button nose was observed.",
+			"The individual's nose is small and rounded.",
+			"Reported to have a button nose."
+		],
+		"upturned": [
+			"Subject's nose is slightly upturned.",
+			"Nose is upturned.",
+			"An upturned nose was observed.",
+			"The individual's nose has an upward tilt.",
+			"Reported to have an upturned nose."
+		],
+		"snub": [
+			"Subject has a short, snub nose.",
+			"Nose is snub-shaped.",
+			"A snub nose was observed.",
+			"The individual's nose is short and blunt.",
+			"Reported to have a snub nose."
+		]
+	},
+	"ears": {
+		"normal__big": [
+			"Subject's ears are large but not protruding.",
+			"Ears are large, not prominent.",
+			"Large ears observed, lying flat.",
+			"The individual has large ears that do not stick out."
+		],
+		"protruding__big": [
+			"Subject has large, protruding ears.",
+			"Ears are large and stick out.",
+			"Large, prominent ears observed.",
+			"The individual's ears are large and noticeably protruding."
+		],
+		"normal__medium": [
+			"Subject's ears are of medium size.",
+			"Ears are medium-sized, not prominent.",
+			"Medium-sized ears observed, lying flat.",
+			"The individual has medium ears that do not stick out."
+		],
+		"protruding__medium": [
+			"Subject's ears are medium-sized and stick out.",
+			"Ears are medium-sized and prominent.",
+			"Medium, protruding ears observed.",
+			"The individual's ears are medium and noticeably protruding."
+		],
+		"normal__small": [
+			"Subject has small ears.",
+			"Ears are small, not prominent.",
+			"Small ears observed, lying flat.",
+			"The individual has small ears that do not stick out."
+		],
+		"protruding__small": [
+			"Subject has small, protruding ears.",
+			"Ears are small and stick out.",
+			"Small, prominent ears observed.",
+			"The individual's ears are small and noticeably protruding."
+		]
+	},
+	"mouth": {
+		"full_lips": [
+			"Subject has full lips.",
+			"Lips are full.",
+			"Full lips observed.",
+			"The individual's lips are plump.",
+			"Reported to have full lips."
+		],
+		"wide_lips": [
+			"Subject's mouth is wide.",
+			"Mouth is wide.",
+			"Wide mouth observed.",
+			"The individual's mouth is broad.",
+			"Reported to have a wide mouth."
+		],
+		"narrow_lips": [
+			"Subject has narrow lips.",
+			"Lips are narrow.",
+			"Narrow lips observed.",
+			"The individual's lips are thin.",
+			"Reported to have narrow lips."
+		],
+		"round_lips": [
+			"Subject's lips are rounded.",
+			"Lips are round.",
+			"Rounded lips observed.",
+			"The individual's lips have a circular shape.",
+			"Reported to have round lips."
+		]
+	},
+	"beard": {
+		"shaven": [
+			"Subject's face is clean-shaven.",
+			"Face is shaven.",
+			"No facial hair present.",
+			"The individual has a smooth, shaven face.",
+			"Reported to be clean-shaven."
+		],
+		"stubble": [
+			"Subject has some stubble.",
+			"Facial hair is stubble.",
+			"Stubble observed on the face.",
+			"The individual has short, unshaven facial hair.",
+			"Reported to have stubble."
+		],
+		"goatee": [
+			"Subject sports a goatee.",
+			"Facial hair is a goatee.",
+			"Goatee observed.",
+			"The individual has a small beard on the chin.",
+			"Reported to have a goatee."
+		],
+		"full_beard": [
+			"Subject has a full beard.",
+			"Facial hair is a full beard.",
+			"Full beard observed.",
+			"The individual has a complete beard covering the jawline.",
+			"Reported to have a full beard."
+		],
+		"circle_beard": [
+			"Subject wears a circle beard.",
+			"Facial hair is a circle beard.",
+			"Circle beard observed.",
+			"The individual has a beard connecting mustache and chin.",
+			"Reported to have a circle beard."
+		],
+		"neck_beard": [
+			"Subject has a neck beard.",
+			"Facial hair is a neck beard.",
+			"Neck beard observed.",
+			"The individual has hair primarily on the neck and jawline.",
+			"Reported to have a neck beard."
+		]
+	},
+	"mustache": {
+		"mustaches": [
+			"Subject has a mustache.",
+			"Mustache is present.",
+			"A mustache was observed.",
+			"The individual has hair above the upper lip.",
+			"Reported to have a mustache."
+		],
+		"shaven": [
+			"Subject is clean-shaven above the lip.",
+			"Area above lip is shaven.",
+			"No mustache present.",
+			"The individual has no hair above the upper lip.",
+			"Reported to be shaven above the lip."
+		],
+		"walrus": [
+			"Subject sports a large, bushy walrus mustache.",
+			"Mustache is a walrus style.",
+			"Walrus mustache observed.",
+			"The individual has a thick, drooping mustache.",
+			"Reported to have a walrus mustache."
+		],
+		"pencil": [
+			"Subject has a thin, pencil-style mustache.",
+			"Mustache is a pencil style.",
+			"Pencil mustache observed.",
+			"The individual has a narrow, thin mustache.",
+			"Reported to have a pencil mustache."
+		],
+		"english": [
+			"Subject wears an English-style mustache.",
+			"Mustache is an English style.",
+			"English mustache observed.",
+			"The individual has a mustache with pointed ends.",
+			"Reported to have an English mustache."
+		],
+		"horseshoe": [
+			"Subject has a horseshoe mustache.",
+			"Mustache is a horseshoe style.",
+			"Horseshoe mustache observed.",
+			"The individual has a mustache extending down the jawline.",
+			"Reported to have a horseshoe mustache."
+		]
+	}
+}
